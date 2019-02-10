@@ -1,14 +1,21 @@
 <?php
+namespace micschk;
+use SilverStripe\Admin\LeftAndMain;
+use SilverStripe\Versioned\Versioned;
+use SilverStripe\Control\Controller;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\ORM\DataExtension;
 /**
  * Provides an extension to limit subpages shown in sitetree,
  * adapted from: http://www.dio5.com/blog/limiting-subpages-in-silverstripe/
- * 
+ *
  * @author Michael van Schaik, Restruct. <mic@restruct.nl>
  * @author Tim Klein, Dodat Ltd <$firstname@dodat.co.nz>
  */
 
 class ExcludeChildren extends DataExtension {
-	
+
 	protected $hiddenChildren = array();
 
 	public function getExcludedClasses(){
@@ -18,10 +25,10 @@ class ExcludeChildren extends DataExtension {
 				$hiddenChildren = array_merge($hiddenChildren, array_values(ClassInfo::subclassesFor($class)));
 			}
 		}
-		$this->hiddenChildren = $hiddenChildren; 
+		$this->hiddenChildren = $hiddenChildren;
 		return $this->hiddenChildren;
 	}
-	
+
 	public function getFilteredChildren($children) {
 		// Optionally force exclusion beyond CMS (eg. exclude from $Children as well)
 		$controller = Controller::curr();
@@ -55,11 +62,11 @@ class ExcludeChildren extends DataExtension {
 		$children = $this->hierarchyLiveChildren($showAll, $onlyDeletedFromStage);
 		return $this->getFilteredChildren($children);
 	}
-	
+
 	/**
 	 * Duplicated & renamed from the Hierarchy::tageChildren() because we're overriding the original method:
 	 * Return children from the stage site
-	 * 
+	 *
 	 * @param showAll Inlcude all of the elements, even those not shown in the menus.
 	 *   (only applicable when extension is applied to {@link SiteTree}).
 	 * @return DataList
@@ -75,11 +82,11 @@ class ExcludeChildren extends DataExtension {
 		$this->owner->extend("augmentStageChildren", $staged, $showAll);
 		return $staged;
 	}
-	
+
 	/**
 	 * Duplicated & renamed from the Hierarchy::liveChildren() because we're overriding the original method:
 	 * Return children from the live site, if it exists.
-	 * 
+	 *
 	 * @param boolean $showAll Include all of the elements, even those not shown in the menus.
 	 *   (only applicable when extension is applied to {@link SiteTree}).
 	 * @param boolean $onlyDeletedFromStage Only return items that have been deleted from stage
@@ -98,10 +105,10 @@ class ExcludeChildren extends DataExtension {
 				'Versioned.mode' => $onlyDeletedFromStage ? 'stage_unique' : 'stage',
 				'Versioned.stage' => 'Live'
 			));
-		
+
 		if(!$showAll) $children = $children->filter('ShowInMenus', 1);
 
 		return $children;
 	}
-	
+
 }

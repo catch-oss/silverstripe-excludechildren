@@ -8,10 +8,15 @@
         "name": "micschk"
     }],
     "require": {
-        "silverstripe/cms": ">=3.0 <3.5"
+        "silverstripe/cms": "4.3.0@stable"
     },
 	"extra": {
 		"installer-name": "excludechildren"
-	}
-    
+    },
+    "autoload": {
+        "psr-4": {
+            "micschk": "code"
+        }
+    }
+
 }
