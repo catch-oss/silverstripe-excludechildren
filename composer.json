@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "micschk": "code"
+            "micschk\\": "code/"
         }
     }
 
