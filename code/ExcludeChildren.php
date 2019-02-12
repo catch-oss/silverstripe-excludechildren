@@ -2,10 +2,14 @@
 namespace micschk;
 use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\ORM\DataExtension;
+use \Exception;
+use SilverStripe\ORM\Hierarchy\Hierarchy;
+use SilverStripe\ORM\DataList;
+use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Control\Controller;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\ORM\DataExtension;
 /**
  * Provides an extension to limit subpages shown in sitetree,
  * adapted from: http://www.dio5.com/blog/limiting-subpages-in-silverstripe/
