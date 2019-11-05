@@ -8,7 +8,7 @@
         "name": "micschk"
     }],
     "require": {
-        "silverstripe/cms": "4.3.0@stable"
+        "silverstripe/cms": "^4"
     },
 	"extra": {
 		"installer-name": "excludechildren"
