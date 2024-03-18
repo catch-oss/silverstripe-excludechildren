@@ -1,15 +1,15 @@
 <?php
+
 namespace micschk;
+
 use SilverStripe\Admin\LeftAndMain;
-use SilverStripe\Versioned\Versioned;
 use SilverStripe\ORM\DataExtension;
 use \Exception;
-use SilverStripe\ORM\Hierarchy\Hierarchy;
 use SilverStripe\ORM\DataList;
-use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Control\Controller;
-use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\ORM\DataObject;
+
 /**
  * Provides an extension to limit subpages shown in sitetree,
  * adapted from: http://www.dio5.com/blog/limiting-subpages-in-silverstripe/
@@ -18,11 +18,13 @@ use SilverStripe\CMS\Model\SiteTree;
  * @author Tim Klein, Dodat Ltd <$firstname@dodat.co.nz>
  */
 
-class ExcludeChildren extends DataExtension {
+class ExcludeChildren extends DataExtension
+{
 
 	protected $hiddenChildren = array();
 
-	public function getExcludedClasses(){
+	public function getExcludedClasses()
+	{
 		$hiddenChildren = array();
 		if ($configClasses = $this->owner->config()->get("excluded_children")) {
 			foreach ($configClasses as $class) {
@@ -33,7 +35,8 @@ class ExcludeChildren extends DataExtension {
 		return $this->hiddenChildren;
 	}
 
-	public function getFilteredChildren($children) {
+	public function getFilteredChildren($children)
+	{
 		// Optionally force exclusion beyond CMS (eg. exclude from $Children as well)
 		$controller = Controller::curr();
 		$action = $controller->getAction();
@@ -42,7 +45,8 @@ class ExcludeChildren extends DataExtension {
 		$allParams = ($controller) ? $controller->getRequest()->allParams() : array();
 		$treeDropdownFieldAction = ($allParams && isset($allParams['Action'])) ? $allParams['Action'] : null;
 
-		if ($this->owner->config()->get("force_exclusion_beyond_cms")
+		if (
+			$this->owner->config()->get("force_exclusion_beyond_cms")
 			|| ($controller instanceof LeftAndMain
 				&& ($treeDropdownFieldAction === 'tree' || in_array($action, array('treeview', 'listview', 'getsubtree'))))
 		) {
@@ -57,12 +61,14 @@ class ExcludeChildren extends DataExtension {
 		return $children;
 	}
 
-	public function stageChildren($showAll = false){
+	public function stageChildren($showAll = false)
+	{
 		$children = $this->hierarchyStageChildren($showAll);
 		return $this->getFilteredChildren($children);
 	}
 
-	public function liveChildren($showAll = false, $onlyDeletedFromStage = false){
+	public function liveChildren($showAll = false, $onlyDeletedFromStage = false)
+	{
 		$children = $this->hierarchyLiveChildren($showAll, $onlyDeletedFromStage);
 		return $this->getFilteredChildren($children);
 	}
@@ -75,8 +81,9 @@ class ExcludeChildren extends DataExtension {
 	 *   (only applicable when extension is applied to {@link SiteTree}).
 	 * @return DataList
 	 */
-	public function hierarchyStageChildren($showAll = false) {
-		$baseClass = ClassInfo::baseDataClass($this->owner->class);
+	public function hierarchyStageChildren($showAll = false)
+	{
+		$baseClass = DataObject::getSchema()->baseDataClass($this->owner->class);
 		$staged = $baseClass::get()
 			->filter('ParentID', (int)$this->owner->ID)
 			->exclude('ID', (int)$this->owner->ID);
@@ -96,12 +103,13 @@ class ExcludeChildren extends DataExtension {
 	 * @param boolean $onlyDeletedFromStage Only return items that have been deleted from stage
 	 * @return SS_List
 	 */
-	public function hierarchyLiveChildren($showAll = false, $onlyDeletedFromStage = false) {
-		if(!$this->owner->hasExtension('Versioned')) {
+	public function hierarchyLiveChildren($showAll = false, $onlyDeletedFromStage = false)
+	{
+		if (!$this->owner->hasExtension('Versioned')) {
 			throw new Exception('Hierarchy->liveChildren() only works with Versioned extension applied');
 		}
 
-		$baseClass = ClassInfo::baseDataClass($this->owner->class);
+		$baseClass = DataObject::getSchema()->baseDataClass($this->owner->class);
 		$children = $baseClass::get()
 			->filter('ParentID', (int)$this->owner->ID)
 			->exclude('ID', (int)$this->owner->ID)
@@ -110,9 +118,8 @@ class ExcludeChildren extends DataExtension {
 				'Versioned.stage' => 'Live'
 			));
 
-		if(!$showAll) $children = $children->filter('ShowInMenus', 1);
+		if (!$showAll) $children = $children->filter('ShowInMenus', 1);
 
 		return $children;
 	}
-
 }
