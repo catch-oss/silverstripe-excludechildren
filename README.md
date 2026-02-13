@@ -1,5 +1,20 @@
 # Replaced by core functionality in SS3.5+
 
+<!-- PROJECT SHIELDS -->
+[![SonarCloud](https://github.com/catch-oss/silverstripe-excludechildren/actions/workflows/sonar.yml/badge.svg)](https://github.com/catch-oss/silverstripe-excludechildren/actions/workflows/sonar.yml)
+[![Test](https://github.com/catch-oss/silverstripe-excludechildren/actions/workflows/test.yml/badge.svg)](https://github.com/catch-oss/silverstripe-excludechildren/actions/workflows/test.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=bugs)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=code_smells)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=coverage)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Duplicated Lines Density](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=duplicated_lines_density)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=ncloc)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=reliability_rating)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=security_rating)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=sqale_index)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=sqale_rating)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=vulnerabilities)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+
 **Thanks to everyone who installed this extension to hide pages from the SiteTree (almost 16.5K composer installs since 2012).**
 Since comparable functionality has ben added to SilverStripe framework (Hierarchy), I'm not updating this module to SS4.
 
