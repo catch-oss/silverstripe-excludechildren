@@ -61,7 +61,7 @@ jobs:
           if [ "${{ github.event.workflow_run.pull_requests[0].number }}" != "" ]; then
             echo "ref=pullRequest=${{ github.event.workflow_run.pull_requests[0].number }}" >> "$GITHUB_OUTPUT"
           else
-            ENCODED_REF=$(echo "${{ github.event.workflow_run.head_branch }}" | jq -sRr @uri)
+            ENCODED_REF=$(printf '%s' "${{ github.event.workflow_run.head_branch }}" | jq -sRr @uri)
             echo "ref=branch=$ENCODED_REF" >> "$GITHUB_OUTPUT"
           fi
 
