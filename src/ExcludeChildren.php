@@ -6,7 +6,7 @@ use Exception;
 use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\ClassInfo;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
@@ -23,7 +23,7 @@ use SilverStripe\Versioned\Versioned;
  *         - MyChildPage
  *       force_exclusion_beyond_cms: false
  */
-class ExcludeChildren extends DataExtension
+class ExcludeChildren extends Extension
 {
     protected array $hiddenChildren = [];
 
