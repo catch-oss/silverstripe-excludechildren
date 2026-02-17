@@ -46,7 +46,11 @@
     "autoload-dev": {
         "psr-4": {
             "micschk\\Tests\\": "tests/"
-        }
+        },
+        "classmap": [
+            "app/src/Page.php",
+            "app/src/PageController.php"
+        ]
     },
     "config": {
         "allow-plugins": {
