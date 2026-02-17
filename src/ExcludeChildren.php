@@ -2,7 +2,7 @@
 
 namespace micschk;
 
-use Exception;
+use LogicException;
 use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\ClassInfo;
@@ -105,7 +105,7 @@ class ExcludeChildren extends Extension
     public function hierarchyLiveChildren(bool $showAll = false, bool $onlyDeletedFromStage = false): DataList
     {
         if (!$this->owner->hasExtension(Versioned::class)) {
-            throw new Exception('ExcludeChildren::liveChildren() requires the Versioned extension');
+            throw new LogicException('ExcludeChildren::liveChildren() requires the Versioned extension');
         }
 
         $baseClass = DataObject::getSchema()->baseDataClass(get_class($this->owner));
