@@ -2,124 +2,125 @@
 
 namespace micschk;
 
+use Exception;
 use SilverStripe\Admin\LeftAndMain;
-use SilverStripe\ORM\DataExtension;
-use \Exception;
-use SilverStripe\ORM\DataList;
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\Control\Controller;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\Versioned;
 
 /**
- * Provides an extension to limit subpages shown in sitetree,
- * adapted from: http://www.dio5.com/blog/limiting-subpages-in-silverstripe/
+ * Extension to hide specific page types from the SiteTree in the CMS.
  *
- * @author Michael van Schaik, Restruct. <mic@restruct.nl>
- * @author Tim Klein, Dodat Ltd <$firstname@dodat.co.nz>
+ * Configure via YAML on a holder page class:
+ *
+ *     MyHolderPage:
+ *       extensions:
+ *         excludechildren: micschk\ExcludeChildren
+ *       excluded_children:
+ *         - MyChildPage
+ *       force_exclusion_beyond_cms: false
  */
-
 class ExcludeChildren extends DataExtension
 {
+    protected array $hiddenChildren = [];
 
-	protected $hiddenChildren = array();
+    public function getExcludedClasses(): array
+    {
+        $hiddenChildren = [];
+        $configClasses = $this->owner->config()->get('excluded_children');
+        if ($configClasses) {
+            foreach ($configClasses as $class) {
+                $hiddenChildren = array_merge($hiddenChildren, array_values(ClassInfo::subclassesFor($class)));
+            }
+        }
+        $this->hiddenChildren = $hiddenChildren;
 
-	public function getExcludedClasses()
-	{
-		$hiddenChildren = array();
-		if ($configClasses = $this->owner->config()->get("excluded_children")) {
-			foreach ($configClasses as $class) {
-				$hiddenChildren = array_merge($hiddenChildren, array_values(ClassInfo::subclassesFor($class)));
-			}
-		}
-		$this->hiddenChildren = $hiddenChildren;
-		return $this->hiddenChildren;
-	}
+        return $this->hiddenChildren;
+    }
 
-	public function getFilteredChildren($children)
-	{
-		// Optionally force exclusion beyond CMS (eg. exclude from $Children as well)
-		$controller = Controller::curr();
-		$action = $controller->getAction();
+    public function getFilteredChildren(DataList $children): DataList
+    {
+        $controller = Controller::curr();
+        $action = $controller->getAction();
 
-		// Check for TreeDropdownField's "tree" allowed_action
-		$allParams = ($controller) ? $controller->getRequest()->allParams() : array();
-		$treeDropdownFieldAction = ($allParams && isset($allParams['Action'])) ? $allParams['Action'] : null;
+        $allParams = $controller->getRequest()->allParams();
+        $treeDropdownFieldAction = $allParams['Action'] ?? null;
 
-		if (
-			$this->owner->config()->get("force_exclusion_beyond_cms")
-			|| ($controller instanceof LeftAndMain
-				&& ($treeDropdownFieldAction === 'tree' || in_array($action, array('treeview', 'listview', 'getsubtree'))))
-		) {
-			//if the page class has a getExcludedChildren function, use it to supply the list of children
-			if ($this->owner->hasMethod('getExcludedChildren')) {
-				return $this->owner->getExcludedChildren($children);
-			}
+        if (
+            $this->owner->config()->get('force_exclusion_beyond_cms')
+            || ($controller instanceof LeftAndMain
+                && ($treeDropdownFieldAction === 'tree' || in_array($action, ['treeview', 'listview', 'getsubtree'])))
+        ) {
+            if ($this->owner->hasMethod('getExcludedChildren')) {
+                return $this->owner->getExcludedChildren($children);
+            }
 
-			return $children->exclude('ClassName', $this->getExcludedClasses());
-		}
+            return $children->exclude('ClassName', $this->getExcludedClasses());
+        }
 
-		return $children;
-	}
+        return $children;
+    }
 
-	public function stageChildren($showAll = false)
-	{
-		$children = $this->hierarchyStageChildren($showAll);
-		return $this->getFilteredChildren($children);
-	}
+    public function stageChildren(bool $showAll = false): DataList
+    {
+        $children = $this->hierarchyStageChildren($showAll);
 
-	public function liveChildren($showAll = false, $onlyDeletedFromStage = false)
-	{
-		$children = $this->hierarchyLiveChildren($showAll, $onlyDeletedFromStage);
-		return $this->getFilteredChildren($children);
-	}
+        return $this->getFilteredChildren($children);
+    }
 
-	/**
-	 * Duplicated & renamed from the Hierarchy::tageChildren() because we're overriding the original method:
-	 * Return children from the stage site
-	 *
-	 * @param showAll Inlcude all of the elements, even those not shown in the menus.
-	 *   (only applicable when extension is applied to {@link SiteTree}).
-	 * @return DataList
-	 */
-	public function hierarchyStageChildren($showAll = false)
-	{
-		$baseClass = DataObject::getSchema()->baseDataClass($this->owner->class);
-		$staged = $baseClass::get()
-			->filter('ParentID', (int)$this->owner->ID)
-			->exclude('ID', (int)$this->owner->ID);
-		if (!$showAll && $this->owner->db('ShowInMenus')) {
-			$staged = $staged->filter('ShowInMenus', 1);
-		}
-		$this->owner->extend("augmentStageChildren", $staged, $showAll);
-		return $staged;
-	}
+    public function liveChildren(bool $showAll = false, bool $onlyDeletedFromStage = false): DataList
+    {
+        $children = $this->hierarchyLiveChildren($showAll, $onlyDeletedFromStage);
 
-	/**
-	 * Duplicated & renamed from the Hierarchy::liveChildren() because we're overriding the original method:
-	 * Return children from the live site, if it exists.
-	 *
-	 * @param boolean $showAll Include all of the elements, even those not shown in the menus.
-	 *   (only applicable when extension is applied to {@link SiteTree}).
-	 * @param boolean $onlyDeletedFromStage Only return items that have been deleted from stage
-	 * @return SS_List
-	 */
-	public function hierarchyLiveChildren($showAll = false, $onlyDeletedFromStage = false)
-	{
-		if (!$this->owner->hasExtension('Versioned')) {
-			throw new Exception('Hierarchy->liveChildren() only works with Versioned extension applied');
-		}
+        return $this->getFilteredChildren($children);
+    }
 
-		$baseClass = DataObject::getSchema()->baseDataClass($this->owner->class);
-		$children = $baseClass::get()
-			->filter('ParentID', (int)$this->owner->ID)
-			->exclude('ID', (int)$this->owner->ID)
-			->setDataQueryParam(array(
-				'Versioned.mode' => $onlyDeletedFromStage ? 'stage_unique' : 'stage',
-				'Versioned.stage' => 'Live'
-			));
+    /**
+     * Return children from the stage site.
+     *
+     * Duplicated from Hierarchy::stageChildren() because we override the original method.
+     */
+    public function hierarchyStageChildren(bool $showAll = false): DataList
+    {
+        $baseClass = DataObject::getSchema()->baseDataClass(get_class($this->owner));
+        $staged = $baseClass::get()
+            ->filter('ParentID', (int) $this->owner->ID)
+            ->exclude('ID', (int) $this->owner->ID);
+        if (!$showAll && $this->owner->db('ShowInMenus')) {
+            $staged = $staged->filter('ShowInMenus', 1);
+        }
+        $this->owner->extend('augmentStageChildren', $staged, $showAll);
 
-		if (!$showAll) $children = $children->filter('ShowInMenus', 1);
+        return $staged;
+    }
 
-		return $children;
-	}
+    /**
+     * Return children from the live site, if it exists.
+     *
+     * Duplicated from Hierarchy::liveChildren() because we override the original method.
+     */
+    public function hierarchyLiveChildren(bool $showAll = false, bool $onlyDeletedFromStage = false): DataList
+    {
+        if (!$this->owner->hasExtension(Versioned::class)) {
+            throw new Exception('ExcludeChildren::liveChildren() requires the Versioned extension');
+        }
+
+        $baseClass = DataObject::getSchema()->baseDataClass(get_class($this->owner));
+        $children = $baseClass::get()
+            ->filter('ParentID', (int) $this->owner->ID)
+            ->exclude('ID', (int) $this->owner->ID)
+            ->setDataQueryParam([
+                'Versioned.mode' => $onlyDeletedFromStage ? 'stage_unique' : 'stage',
+                'Versioned.stage' => 'Live',
+            ]);
+
+        if (!$showAll) {
+            $children = $children->filter('ShowInMenus', 1);
+        }
+
+        return $children;
+    }
 }
