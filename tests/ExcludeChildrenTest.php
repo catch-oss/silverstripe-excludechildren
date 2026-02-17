@@ -2,8 +2,8 @@
 
 namespace micschk\Tests;
 
-use Exception;
 use micschk\ExcludeChildren;
+use Page;
 use SilverStripe\CMS\Model\RedirectorPage;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
@@ -12,20 +12,19 @@ use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataList;
-use SilverStripe\Versioned\Versioned;
 
 class ExcludeChildrenTest extends SapphireTest
 {
     protected static $required_extensions = [
-        SiteTree::class => [ExcludeChildren::class],
+        Page::class => [ExcludeChildren::class],
     ];
 
-    private SiteTree $holder;
+    private Page $holder;
 
     /**
      * Set up test fixtures:
-     * - A holder SiteTree page with the ExcludeChildren extension
-     * - A normal SiteTree child page (should never be excluded)
+     * - A holder Page with the ExcludeChildren extension
+     * - A normal Page child (should never be excluded)
      * - A RedirectorPage child (configured as the excluded type)
      * - A front-end controller context (non-CMS) for Controller::curr()
      * - Config: excluded_children = [RedirectorPage], force_exclusion_beyond_cms = false
@@ -42,16 +41,16 @@ class ExcludeChildrenTest extends SapphireTest
         $controller->setRequest($request);
         $controller->pushCurrent();
 
-        Config::modify()->set(SiteTree::class, 'excluded_children', [
+        Config::modify()->set(Page::class, 'excluded_children', [
             RedirectorPage::class,
         ]);
-        Config::modify()->set(SiteTree::class, 'force_exclusion_beyond_cms', false);
+        Config::modify()->set(Page::class, 'force_exclusion_beyond_cms', false);
 
-        $this->holder = SiteTree::create();
+        $this->holder = Page::create();
         $this->holder->Title = 'Test Holder';
         $this->holder->write();
 
-        $normalChild = SiteTree::create();
+        $normalChild = Page::create();
         $normalChild->Title = 'Normal Child';
         $normalChild->ParentID = $this->holder->ID;
         $normalChild->write();
@@ -78,7 +77,7 @@ class ExcludeChildrenTest extends SapphireTest
         // Given: excluded_children config contains RedirectorPage
         // When: getExcludedClasses() is called
         // Then: the returned array includes RedirectorPage (and its subclasses)
-        //       but does not include the holder's own class (SiteTree)
+        //       but does not include the holder's own class (Page)
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
         $extension->setOwner($this->holder);
 
@@ -86,7 +85,7 @@ class ExcludeChildrenTest extends SapphireTest
 
         $this->assertIsArray($excluded);
         $this->assertContains(RedirectorPage::class, $excluded);
-        $this->assertNotContains(SiteTree::class, $excluded);
+        $this->assertNotContains(Page::class, $excluded);
     }
 
     public function testGetExcludedClassesReturnsEmptyWhenNoConfig(): void
@@ -94,7 +93,7 @@ class ExcludeChildrenTest extends SapphireTest
         // Given: excluded_children config is null (no exclusions configured)
         // When: getExcludedClasses() is called
         // Then: an empty array is returned — nothing is excluded
-        Config::modify()->set(SiteTree::class, 'excluded_children', null);
+        Config::modify()->set(Page::class, 'excluded_children', null);
 
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
         $extension->setOwner($this->holder);
@@ -124,11 +123,11 @@ class ExcludeChildrenTest extends SapphireTest
     public function testGetFilteredChildrenFiltersWhenForced(): void
     {
         // Given: force_exclusion_beyond_cms is true (exclusion applies everywhere)
-        //        and the holder has both a SiteTree child and a RedirectorPage child
+        //        and the holder has both a Page child and a RedirectorPage child
         // When: getFilteredChildren() is called
         // Then: RedirectorPage children are excluded from the result,
-        //       but SiteTree children remain
-        Config::modify()->set(SiteTree::class, 'force_exclusion_beyond_cms', true);
+        //       but Page children remain
+        Config::modify()->set(Page::class, 'force_exclusion_beyond_cms', true);
 
         $children = SiteTree::get()->filter('ParentID', $this->holder->ID);
         $originalCount = $children->count();
@@ -179,7 +178,7 @@ class ExcludeChildrenTest extends SapphireTest
         // When: stageChildren() is called (which delegates to hierarchyStageChildren
         //       then passes the result through getFilteredChildren)
         // Then: RedirectorPage children are excluded from the final result
-        Config::modify()->set(SiteTree::class, 'force_exclusion_beyond_cms', true);
+        Config::modify()->set(Page::class, 'force_exclusion_beyond_cms', true);
 
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
         $extension->setOwner($this->holder);
