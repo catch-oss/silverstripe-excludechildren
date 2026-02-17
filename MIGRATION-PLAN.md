@@ -100,9 +100,19 @@ No existing tests. Tests must be written from scratch.
 ### Phase 5: Logging Integration
 - [ ] Not applicable — module has no logging needs
 
-### Phase 6: Config Updates
+### Phase 6: Config & Cleanup
 - [ ] No config changes needed
 - [ ] Remove `.scrutinizer.yml` (obsolete, replaced by SonarCloud)
+
+### Phase 6b: README Rewrite
+- [ ] Remove all legacy SS3/SS3.5 content and migration notes
+- [ ] Remove "Replaced by core functionality" messaging (this is now an active catch-oss fork)
+- [ ] Keep CI/SonarCloud badges at top
+- [ ] Write fresh SS6-compatible docs: requirements, installation, YAML config (named extension keys), usage
+- [ ] Show modern PHP 8.5 code examples (typed properties, short arrays, return types)
+- [ ] Document `excluded_children`, `force_exclusion_beyond_cms`, custom `getExcludedChildren()`
+- [ ] Document `$Children` template behaviour and workarounds
+- [ ] Remove references to defunct external modules (gridfieldsitetreebuttons, gridfieldpages)
 
 ### Phase 7: Test Suite (Silverstripe Best Practices)
 - [ ] Create `phpunit.xml.dist` with SS framework bootstrap
