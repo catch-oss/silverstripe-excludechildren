@@ -22,11 +22,20 @@ class ExcludeChildrenTest extends SapphireTest
 
     private SiteTree $holder;
 
+    /**
+     * Set up test fixtures:
+     * - A holder SiteTree page with the ExcludeChildren extension
+     * - A normal SiteTree child page (should never be excluded)
+     * - A RedirectorPage child (configured as the excluded type)
+     * - A front-end controller context (non-CMS) for Controller::curr()
+     * - Config: excluded_children = [RedirectorPage], force_exclusion_beyond_cms = false
+     */
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Push a controller so Controller::curr() works in getFilteredChildren()
+        // Push a controller so Controller::curr() works in getFilteredChildren().
+        // This simulates a front-end request context (not LeftAndMain/CMS).
         $request = new HTTPRequest('GET', '/');
         $request->setSession(new Session([]));
         $controller = Controller::create();
@@ -66,6 +75,10 @@ class ExcludeChildrenTest extends SapphireTest
 
     public function testGetExcludedClassesReturnsConfiguredClasses(): void
     {
+        // Given: excluded_children config contains RedirectorPage
+        // When: getExcludedClasses() is called
+        // Then: the returned array includes RedirectorPage (and its subclasses)
+        //       but does not include the holder's own class (SiteTree)
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
         $extension->setOwner($this->holder);
 
@@ -78,6 +91,9 @@ class ExcludeChildrenTest extends SapphireTest
 
     public function testGetExcludedClassesReturnsEmptyWhenNoConfig(): void
     {
+        // Given: excluded_children config is null (no exclusions configured)
+        // When: getExcludedClasses() is called
+        // Then: an empty array is returned — nothing is excluded
         Config::modify()->set(SiteTree::class, 'excluded_children', null);
 
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
@@ -91,6 +107,10 @@ class ExcludeChildrenTest extends SapphireTest
 
     public function testGetFilteredChildrenReturnsUnfilteredOutsideCMS(): void
     {
+        // Given: force_exclusion_beyond_cms is false and the current controller
+        //        is a plain Controller (not LeftAndMain/CMS)
+        // When: getFilteredChildren() is called with the holder's children
+        // Then: all children are returned unfiltered — exclusion only applies in the CMS
         $children = SiteTree::get()->filter('ParentID', $this->holder->ID);
 
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
@@ -98,12 +118,16 @@ class ExcludeChildrenTest extends SapphireTest
 
         $filtered = $extension->getFilteredChildren($children);
 
-        // Outside CMS with force_exclusion_beyond_cms=false, all children returned
         $this->assertCount($children->count(), $filtered);
     }
 
     public function testGetFilteredChildrenFiltersWhenForced(): void
     {
+        // Given: force_exclusion_beyond_cms is true (exclusion applies everywhere)
+        //        and the holder has both a SiteTree child and a RedirectorPage child
+        // When: getFilteredChildren() is called
+        // Then: RedirectorPage children are excluded from the result,
+        //       but SiteTree children remain
         Config::modify()->set(SiteTree::class, 'force_exclusion_beyond_cms', true);
 
         $children = SiteTree::get()->filter('ParentID', $this->holder->ID);
@@ -122,6 +146,9 @@ class ExcludeChildrenTest extends SapphireTest
 
     public function testHierarchyStageChildrenReturnsChildPages(): void
     {
+        // Given: the holder page has child pages in the Stage (draft) site
+        // When: hierarchyStageChildren() is called with showAll=true
+        // Then: a non-empty DataList of child pages is returned
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
         $extension->setOwner($this->holder);
 
@@ -133,6 +160,10 @@ class ExcludeChildrenTest extends SapphireTest
 
     public function testHierarchyStageChildrenExcludesParent(): void
     {
+        // Given: the holder page has child pages
+        // When: hierarchyStageChildren() is called
+        // Then: the holder's own ID is not in the result set
+        //       (the query excludes ID = owner ID to prevent self-inclusion)
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
         $extension->setOwner($this->holder);
 
@@ -144,6 +175,10 @@ class ExcludeChildrenTest extends SapphireTest
 
     public function testStageChildrenAppliesFiltering(): void
     {
+        // Given: force_exclusion_beyond_cms is true and RedirectorPage is excluded
+        // When: stageChildren() is called (which delegates to hierarchyStageChildren
+        //       then passes the result through getFilteredChildren)
+        // Then: RedirectorPage children are excluded from the final result
         Config::modify()->set(SiteTree::class, 'force_exclusion_beyond_cms', true);
 
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
@@ -157,6 +192,9 @@ class ExcludeChildrenTest extends SapphireTest
 
     public function testHierarchyLiveChildrenReturnsDataList(): void
     {
+        // Given: the holder page has the Versioned extension (SiteTree default)
+        // When: hierarchyLiveChildren() is called with showAll=true
+        // Then: a DataList is returned (querying the Live stage via Versioned)
         $extension = $this->holder->getExtensionInstance(ExcludeChildren::class);
         $extension->setOwner($this->holder);
 
