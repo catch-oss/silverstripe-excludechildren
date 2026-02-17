@@ -80,6 +80,13 @@ class SubPageHolder extends \Page
 }
 ```
 
+## Compatibility
+
+| Version | Silverstripe | PHP |
+|---------|-------------|-----|
+| release/6 | ^6.0 | ^8.5 |
+| release/5 | ^5.1 | ~8.4 |
+
 ## License
 
 BSD-3-Clause
