@@ -1,194 +1,85 @@
-# Replaced by core functionality in SS3.5+
+# silverstripe-excludechildren
 
-**Thanks to everyone who installed this extension to hide pages from the SiteTree (almost 16.5K composer installs since 2012).**
-Since comparable functionality has ben added to SilverStripe framework (Hierarchy), I'm not updating this module to SS4.
+<!-- PROJECT SHIELDS -->
+[![SonarCloud](https://github.com/catch-oss/silverstripe-excludechildren/actions/workflows/sonar.yml/badge.svg)](https://github.com/catch-oss/silverstripe-excludechildren/actions/workflows/sonar.yml)
+[![Test](https://github.com/catch-oss/silverstripe-excludechildren/actions/workflows/test.yml/badge.svg)](https://github.com/catch-oss/silverstripe-excludechildren/actions/workflows/test.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=bugs)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=code_smells)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=coverage)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Duplicated Lines Density](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=duplicated_lines_density)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=ncloc)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=reliability_rating)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=security_rating)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=sqale_index)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=sqale_rating)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=catch-design_catch-oss-silverstripe-excludechildren&metric=vulnerabilities)](https://sonarcloud.io/component_measures?id=catch-design_catch-oss-silverstripe-excludechildren)
 
-I've tagged a 2.0 release marking incompatibility from SS3.5 upwards (in composer), this should prompt users to migrate to core functionality as described below. I'll leave this repo as-is so please open a ticket if this causes any problems for you and I'll to my best to sort things out.
-
-The 1.1 release should remain be usable on any SS3 version if needed, but I recommend simply uninstalling this module from SS3.5 onward and updating your config as follows instead:
-
-## Configuring hidden pages in SS3.5+
-
-### $hide_from_cms_tree hides in CMS, not in front-end
-
-**Hiding pagetypes in the CMS, in general**
-```yaml
-SilverStripe\ORM\Hierarchy\Hierarchy:
-  hide_from_cms_tree:
-    - 'PageClassToHide'
-```
-
-**Hiding pagetypes in the CMS, only if sub-page of a 'holder' pagetype**
-```yaml
-HiddenPageHolderClass:
-  hide_from_cms_tree:
-    - 'PageClassToHide'
-```
-
-### $hide_from_hierarchy hides both in CMS & front-end
-
-**Hiding page types in both the CMS & Front-end, in general**
-```yaml
-SilverStripe\ORM\Hierarchy\Hierarchy:
-  hide_from_hierarchy:
-    - 'PageClassToHide'
-```
-
-**Hiding page types in both the CMS & Front-end, only if sub-page of a 'holder' pagetype**
-```yaml
-HiddenPageHolderClass:
-  hide_from_hierarchy:
-    - 'PageClassToHide'
-```
-
-## Managing 'hidden' pages in SS3.5+
-
-Manage hidden pages using a Gridfield (see: [silverstripe-gridfieldsitetreebuttons](https://github.com/micschk/silverstripe-gridfieldsitetreebuttons)) on the holder page or use a ModelAdmin or similar.
-
-Of course there's also the very inspir<del>ed</del>ing Lumberjack module (but you've probably seen that being plugged already)... (/sarcasm)
-
-## Getting 'hidden' pages in front-end
-
-If using ```$hide_from_hierarchy```, hidden pages will not be included in ```$Children``` loops. Instead, they can be queries using something like:
-
-```php
-	public function HiddenChildren(){
-		return SiteTree::get()->filter('ParentID', $this->ID)->sort('Sort');
-	}
-```
-
-Or, paginated:
-
-```php
-	public function PaginatedChildren(){
-		$children = SiteTree::get()->filter('ParentID', $this->ID);
-		$ctrlr = Controller::curr();
-		$children = new PaginatedList($children, $ctrlr->request);
-		$children->setPageLength(10);
-		return $children;
-	}
-```
-
-# Legacy: using excludechildren module (in SS<3.5)
+A Silverstripe 6 extension that hides specific child page types from the CMS SiteTree, while keeping them accessible via the ORM and front-end templates.
 
 ## Requirements
 
- * SilverStripe 3.0 or newer (<3.5)
-
-
-## Screenshot
-*Hide SiteTree items from from the sitetree (and, with some extra code/modules, manage them from a GridField):*
-![](images/screenshots/holderscreen.png)
-
+- PHP 8.5+
+- Silverstripe CMS 6.0+
+- Silverstripe Framework 6.0+
 
 ## Installation
 
-```
-composer require micschk/silverstripe-excludechildren dev-master
+```bash
+composer require micschk/silverstripe-excludechildren
 ```
 
-## Usage
+## Configuration
 
-In config.yml (best):
+Apply the extension to a holder page class and list the child page types to hide:
 
 ```yaml
----
-Only:
-  classexists: 'ExcludeChildren'
----
-SubPageHolder:
+# app/_config/excludechildren.yml
+App\Pages\SubPageHolder:
   extensions:
-	- 'ExcludeChildren'
+    excludechildren: micschk\ExcludeChildren
   excluded_children:
-	- 'SubPage'
-	- 'AnotherPageType'
-  # optionally exclude from theme $Children as well (set to true if desired, default only from CMS)
-  # eg. to exclude pre-existing child pages with 'show in menus' = true
+    - App\Pages\SubPage
+    - App\Pages\AnotherChildType
   force_exclusion_beyond_cms: false
 ```
 
-Or in your Page class (php):
+### Options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `excluded_children` | `array` | `[]` | Page class names to hide from the SiteTree |
+| `force_exclusion_beyond_cms` | `bool` | `false` | Also hide from `$Children` in templates |
+
+## How it works
+
+By default the extension only filters children in the CMS SiteTree view (treeview, listview, getsubtree actions, and TreeDropdownField). Pages remain fully accessible via the ORM and front-end `$Children` loops.
+
+When `force_exclusion_beyond_cms` is `true`, the extension also filters `$Children` in templates. Use a custom getter to retrieve hidden children in that case:
 
 ```php
-	class SubPageHolder extends Page {
-		...
-		static $extensions = array("ExcludeChildren");
-		static $excluded_children = array('SubPage', 'AnotherPageType_Extending_Page');
-		...
+public function AllChildren(): DataList
+{
+    return SiteTree::get()->filter('ParentID', $this->ID)->sort('Sort');
+}
 ```
 
-Or externally via _config.php:
+## Custom filtering
+
+For filtering logic beyond class name matching, implement `getExcludedChildren()` on your holder page class. It receives the full children DataList and should return the filtered result:
 
 ```php
-		Object::add_extension("SubPageHolder", "ExcludeChildren");
-		Config::inst()->update("SubPageHolder", "excluded_children", array("BlogEntry"));
+use SilverStripe\ORM\DataList;
+
+class SubPageHolder extends \Page
+{
+    public function getExcludedChildren(DataList $children): DataList
+    {
+        return $children->filter('ShowInMenus', true);
+    }
+}
 ```
 
-###Then, add a GridField instead to create/edit subpages
-(See Gridfieldpages module below for a turnkey solution/example)
-```php
-	$gridFieldConfig = GridFieldConfig::create()->addComponents(
-		new GridFieldToolbarHeader(),
-		new GridFieldAddNewSiteTreeItemButton('toolbar-header-right'), // GridfieldSitetreebuttons module
-		new GridFieldSortableHeader(),
-		new GridFieldFilterHeader(),
-		$dataColumns = new GridFieldDataColumns(),
-		new GridFieldPaginator(20),
-		new GridFieldEditSiteTreeItemButton(), // GridfieldSitetreebuttons module
-		new GridFieldOrderableRows() // Gridfieldextensions module, default 'Sort' is equal to page sort field...
-	);
-	$dataColumns->setDisplayFields(array(
-		'Title' => 'Title',
-		'URLSegment'=> 'URL',
-		//'getStatus' => 'Status', // Implement getStatus() on child page class, see gridfieldpages module for an example
-		'LastEdited' => 'Changed',
-	));
-	// use gridfield as normal
-	$gridField = new GridField(
-		"SubPages", # Can be any name, field doesn't have to exist on model...
-		"SubPages of this page", 
-        SiteTree::get()->filter('ParentID', $this->ID),
-		$gridFieldConfig);
-    $fields->addFieldToTab("Root.SubPages", $gridField);
-```
+## License
 
-## Looping over $Children in templates
-
-This module only hides child pages from the CMS sitetree by default. So you can just use $Children as usual in your theme. Child pages will also be available when creating links to pages from the CMS editor. 
-
-When excluding pages from the front-end as well (force_exclusion_beyond_cms), you can add an alternative getter to your Holder:
-
-```php
-	public function SortedChildren(){
-		return SiteTree::get()->filter('ParentID', $this->ID)->sort('Sort');
-	}
-```
-
-Or, paginated:
-
-```php
-	public function PaginatedChildren(){
-		$children = SiteTree::get()->filter('ParentID', $this->ID);
-		$ctrlr = Controller::curr();
-		$children = new PaginatedList($children, $ctrlr->request);
-		$children->setPageLength(10);
-		return $children;
-	}
-```
-
-Things to check if your pages are not showing up in $Children:
-- is force_exclusion_beyond_cms set to false (or use custom getter)?
-- are your child pages set to appear in menu's (show in menu's)?
-
-## Customising your children
-
-If you need to customise your hidden children by more than just classname you can implement the `getExcludedChildren` which needs to return a `DataList` of the children *to show* in the SiteTree.
-
-
-## Pro tip
-
-Add GridfieldSitetreebuttons to your gridfieldconfig to edit the pages in their regular edit forms:
-* [silverstripe-gridfieldsitetreebuttons](https://github.com/micschk/silverstripe-gridfieldsitetreebuttons)
-
-Or use/subclass the preconfigured GridfieldPages module, which contains both excludechildren, sitetreebuttons, sorting and publication status:
-* [silverstripe-gridfieldpages](https://github.com/micschk/silverstripe-gridfieldpages)
+BSD-3-Clause
