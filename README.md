@@ -85,6 +85,7 @@ class SubPageHolder extends \Page
 | Version | Silverstripe | PHP |
 |---------|-------------|-----|
 | release/6.2 | ^6.2 | ^8.5 |
+| release/6 | ^6.0 | ^8.5 |
 | release/5 | ^5.1 | ~8.4 |
 
 ## License
