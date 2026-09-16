@@ -20,8 +20,8 @@ A Silverstripe 6 extension that hides specific child page types from the CMS Sit
 ## Requirements
 
 - PHP 8.5+
-- Silverstripe CMS 6.0+
-- Silverstripe Framework 6.0+
+- Silverstripe CMS 6.2+
+- Silverstripe Framework 6.2+
 
 ## Installation
 
@@ -84,7 +84,7 @@ class SubPageHolder extends \Page
 
 | Version | Silverstripe | PHP |
 |---------|-------------|-----|
-| release/6 | ^6.0 | ^8.5 |
+| release/6.2 | ^6.2 | ^8.5 |
 | release/5 | ^5.1 | ~8.4 |
 
 ## License
